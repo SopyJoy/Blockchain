@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: SOFIA
+pragma solidity ^0.8.0;
+
+contract Studentprofile {
+    struct Students {
+        string fullName;
+        string yearLevel;
+        string program;
+        uint avg;
+        string remark;
+    }
+
+    mapping(address => Students) public studentRecords;
+    address[] private studentAddresses;
+
+    uint average;
+    address studentID;
+    string remarks;
+
+    constructor() {
+        address[3] memory initialAddresses = [
+            0x996977dE5819bBEE213906dD1440c1ca2Bf83c50,
+            0x86C9C2Ce4Df9A3f2900cA8637088D14e6d04374D,
+            0xA944878d442fFa59A888eD4D4767c05a23AEF516
+        ];
+        
+        studentRecords[initialAddresses[0]] = Students("Kim Namjoon", "2", "CS", average, remarks);
+        studentRecords[initialAddresses[1]] = Students("Park Jimin", "3", "WD", average, remarks);
+        studentRecords[initialAddresses[2]] = Students("Min Yoongi", "4", "CYB", average, remarks);
+        
+        for (uint i = 0; i < initialAddresses.length; i++) {
+            studentAddresses.push(initialAddresses[i]);
+        }
+    }
+
+    function setStudentData(address studentAddress, string memory fullName, string memory yearLevel, string memory program) public {
+        // Check if the student address is new
+        bool isNewStudent = studentRecords[studentAddress].avg == 0 && bytes(studentRecords[studentAddress].remark).length == 0;
+        
+        Students memory newStudent;
+        newStudent.fullName = fullName;
+        newStudent.yearLevel = yearLevel;
+        newStudent.program = program;
+        
+        studentRecords[studentAddress] = newStudent;
+
+        if (isNewStudent) {
+            studentAddresses.push(studentAddress);
+        }
+    }
+
+    function ComputeAvgRemarks(address studentAddress, uint prelim, uint midterm, uint finals) public {
+        studentID = studentAddress;
+        average = (prelim + midterm + finals) / 3;
+        if (average < 75) {
+            remarks = "Failed";
+        } else {
+            remarks = "Passed";
+        }
+        studentRecords[studentAddress].avg = average;
+        studentRecords[studentAddress].remark = remarks;
+    }
+
+    function getStudentName(address studentAddress) public view returns (string memory) {
+        return studentRecords[studentAddress].fullName;
+    }
+
+    function getStudentLevel(address studentAddress) public view returns (string memory) {
+        return studentRecords[studentAddress].yearLevel;
+    }
+
+    function getStudentProgram(address studentAddress) public view returns (string memory) {
+        return studentRecords[studentAddress].program;
+    }
+
+    function displayAllStudentRecords() public view returns (Students[] memory) {
+        Students[] memory studentData = new Students[](studentAddresses.length);
+        for (uint i = 0; i < studentAddresses.length; i++) {
+            studentData[i] = studentRecords[studentAddresses[i]];
+        }
+        return studentData;
+    }
+}
